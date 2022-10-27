@@ -1,7 +1,6 @@
 import {ShopifyRestResources} from '../rest/types';
 
 import {AuthScopes} from './auth/scopes';
-import {SessionStorage} from './session/session_storage';
 import {BillingConfig, ShopifyBilling} from './billing/types';
 import {ShopifyClients} from './clients/types';
 import {ShopifyAuth} from './auth/types';
@@ -9,10 +8,7 @@ import {ShopifySession} from './session/types';
 import {ShopifyUtils} from './utils/types';
 import {ShopifyWebhooks} from './webhooks/types';
 
-export interface ConfigParams<
-  T extends ShopifyRestResources = any,
-  S extends SessionStorage = SessionStorage,
-> {
+export interface ConfigParams<T extends ShopifyRestResources = any> {
   apiKey: string;
   apiSecretKey: string;
   scopes: string[] | AuthScopes;
@@ -21,7 +17,6 @@ export interface ConfigParams<
   apiVersion: ApiVersion;
   isEmbeddedApp: boolean;
   isPrivateApp?: boolean;
-  sessionStorage?: S;
   logFunction?: (severity: LogSeverity, msg: string) => Promise<void>;
   userAgentPrefix?: string;
   privateAppStorefrontAccessToken?: string;
@@ -30,10 +25,8 @@ export interface ConfigParams<
   restResources?: T;
 }
 
-export interface ConfigInterface<S extends SessionStorage = SessionStorage>
-  extends Omit<ConfigParams, 'restResources'> {
+export interface ConfigInterface extends Omit<ConfigParams, 'restResources'> {
   hostScheme: 'http' | 'https';
-  sessionStorage: S;
   scopes: AuthScopes;
   isPrivateApp: boolean;
   logFunction: (severity: LogSeverity, msg: string) => Promise<void>;
@@ -41,9 +34,8 @@ export interface ConfigInterface<S extends SessionStorage = SessionStorage>
 
 export interface Shopify<
   T extends ShopifyRestResources = ShopifyRestResources,
-  S extends SessionStorage = SessionStorage,
 > {
-  config: ConfigInterface<S>;
+  config: ConfigInterface;
   clients: ShopifyClients;
   auth: ShopifyAuth;
   session: ShopifySession;

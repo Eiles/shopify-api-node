@@ -6,7 +6,6 @@ import * as ShopifyErrors from '../../error';
 import {createValidateHmac} from '../../utils/hmac-validator';
 import {createSanitizeShop} from '../../utils/shop-validator';
 import {Session} from '../../session/session';
-import {SessionInterface} from '../../session/types';
 import {
   createGetJwtSessionId,
   createGetOfflineId,
@@ -159,13 +158,6 @@ export function createCallback(config: ConfigInterface) {
       });
     }
 
-    const sessionStored = await config.sessionStorage.storeSession(session);
-    if (!sessionStored) {
-      throw new ShopifyErrors.SessionStorageError(
-        'Session could not be saved. Please check your session storage functionality.',
-      );
-    }
-
     return {
       headers: (await abstractConvertHeaders(
         cookies.response.headers!,
@@ -203,7 +195,7 @@ function createSession({
   shop: string;
   stateFromCookie: string;
   isOnline: boolean;
-}): SessionInterface {
+}): Session {
   if (
     !isOnline &&
     (postResponse.body as OnlineAccessResponse).associated_user

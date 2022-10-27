@@ -1,7 +1,4 @@
-import {abstractCreateDefaultStorage} from '../runtime/session';
-
 import {ShopifyError} from './error';
-import {SessionStorage} from './session/session_storage';
 import {
   ConfigInterface,
   ConfigParams,
@@ -10,10 +7,8 @@ import {
 } from './base-types';
 import {AuthScopes} from './auth/scopes';
 
-export function validateConfig<S extends SessionStorage = SessionStorage>(
-  params: ConfigParams<any, S>,
-): ConfigInterface<S> {
-  const config: ConfigInterface<S> = {
+export function validateConfig(params: ConfigParams<any>): ConfigInterface {
+  const config: ConfigInterface = {
     apiKey: '',
     apiSecretKey: '',
     scopes: new AuthScopes([]),
@@ -23,9 +18,6 @@ export function validateConfig<S extends SessionStorage = SessionStorage>(
     isEmbeddedApp: true,
     isPrivateApp: false,
     logFunction: defaultLogFunction,
-    // TS hack as sessionStorage is guaranteed to be set
-    // to a correct value in `initialize()`.
-    sessionStorage: null as unknown as S,
   };
 
   // Make sure that the essential params actually have content in them
@@ -51,7 +43,6 @@ export function validateConfig<S extends SessionStorage = SessionStorage>(
   }
 
   const {
-    sessionStorage,
     hostScheme,
     isPrivateApp,
     userAgentPrefix,
@@ -67,8 +58,6 @@ export function validateConfig<S extends SessionStorage = SessionStorage>(
       params.scopes instanceof AuthScopes
         ? params.scopes
         : new AuthScopes(params.scopes),
-    // We only want to use the default if there is no existing session storage.
-    sessionStorage: sessionStorage ?? abstractCreateDefaultStorage(),
     hostScheme: hostScheme ?? config.hostScheme,
     isPrivateApp:
       isPrivateApp === undefined ? config.isPrivateApp : isPrivateApp,
@@ -79,8 +68,6 @@ export function validateConfig<S extends SessionStorage = SessionStorage>(
     customShopDomains: customShopDomains ?? config.customShopDomains,
     billing: billing ?? config.billing,
   });
-
-  config.sessionStorage.setConfig(config);
 
   return config;
 }

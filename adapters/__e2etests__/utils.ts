@@ -1,5 +1,4 @@
 import {Headers, canonicalizeHeaders} from '../../runtime/http';
-import {MemorySessionStorage} from '../../session-storage/memory';
 import {ConfigInterface, LATEST_API_VERSION} from '../../lib/base-types';
 import {AuthScopes} from '../../lib/auth/scopes';
 
@@ -32,6 +31,5 @@ export const config: ConfigInterface = {
   apiVersion: LATEST_API_VERSION,
   isEmbeddedApp: true,
   isPrivateApp: false,
-  sessionStorage: new MemorySessionStorage(),
   logFunction: () => Promise.resolve(),
 };
