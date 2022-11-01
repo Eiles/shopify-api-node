@@ -3,7 +3,8 @@ import {Method, StatusCode} from '@shopify/network';
 import * as ShopifyErrors from '../../error';
 import {SHOPIFY_API_LIBRARY_VERSION} from '../../version';
 import ProcessedQuery from '../../utils/processed-query';
-import {ConfigInterface, LogSeverity} from '../../base-types';
+import {ConfigInterface} from '../../base-types';
+import {LogSeverity} from '../../types';
 import {createSHA256HMAC} from '../../../runtime/crypto';
 import {HashFormat} from '../../../runtime/crypto/types';
 import {

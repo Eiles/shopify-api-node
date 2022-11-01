@@ -1,6 +1,4 @@
-import {AdapterArgs} from '../../runtime';
-
-import type {shopifyWebhooks} from '.';
+import {AdapterArgs} from '../../runtime/types';
 
 export enum DeliveryMethod {
   Http = 'http',
@@ -110,5 +108,3 @@ export interface AddHandlersParams {
 export interface WebhookProcessParams extends AdapterArgs {
   rawBody: string;
 }
-
-export type ShopifyWebhooks = ReturnType<typeof shopifyWebhooks>;

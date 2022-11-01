@@ -1,5 +1,5 @@
 import {CreateGraphqlClientClassParams} from '..';
-import {ShopifyHeader} from '../../base-types';
+import {ShopifyHeader} from '../../types';
 import {createHttpClientClass} from '../http_client/http_client';
 
 import {AccessTokenHeader, GraphqlClient} from './graphql_client';

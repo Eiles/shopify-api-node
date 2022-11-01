@@ -1,5 +1,6 @@
 import {InvalidDeliveryMethodError} from '../error';
-import {ConfigInterface, LogSeverity} from '../base-types';
+import {ConfigInterface} from '../base-types';
+import {LogSeverity} from '../types';
 
 import {
   AddHandlersParams,

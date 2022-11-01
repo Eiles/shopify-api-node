@@ -7,9 +7,8 @@ import {
   shopify,
 } from '../../__tests__/test-helper';
 import {HttpWebhookHandler} from '../types';
-import {Shopify} from '../../base-types';
 import {InvalidDeliveryMethodError, InvalidWebhookError} from '../../error';
-import {shopifyApi} from '../..';
+import {shopifyApi, Shopify} from '../..';
 import {Session} from '../../session/session';
 import {JwtPayload} from '../../session/types';
 

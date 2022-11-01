@@ -1,6 +1,7 @@
 import * as ShopifyErrors from '../error';
 import {validateConfig} from '../config';
-import {ApiVersion, ConfigParams} from '../base-types';
+import {ConfigParams} from '../base-types';
+import {ApiVersion} from '../types';
 
 const validParams: ConfigParams = {
   apiKey: 'apiKey',
