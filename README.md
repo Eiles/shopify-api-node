@@ -109,7 +109,6 @@ These are all the configuration values `shopifyApi` supports.
 | hostScheme                      | `"https" \| "http"`      |    No    |      `"https"`       | The scheme for your app's public URL                                                                                                                                         |
 | apiVersion                      | `ApiVersion`             |    No    | `LATEST_API_VERSION` | API version your app will be querying. E.g. `ApiVersion.January20`                                                                                                           |
 | isEmbeddedApp                   | `boolean`                |    No    |        `true`        | Whether your app will run within the Shopify Admin                                                                                                                           |
-| sessionStorage                  | `SessionStorage`         |   Yes    | _Depends on runtime_ | The storage strategy for your user sessions. Learn more about the [available strategies](docs/usage/customsessions.md)                                                       |
 | isPrivateApp                    | `boolean`                |    No    |       `false`        | Whether you are building a private app for a store                                                                                                                           |
 | logFile                         | `string`                 |    No    |     `undefined`      | File path where the library may log some events                                                                                                                              |
 | userAgentPrefix                 | `string`                 |    No    |     `undefined`      | Any prefix you wish to include in the `User-Agent` for requests made by the library                                                                                          |
@@ -134,8 +133,6 @@ These are all the configuration values `shopifyApi` supports.
   - [Process a Webhook](docs/usage/webhooks.md#process-a-webhook)
 - [Billing](docs/usage/billing.md)
 - [Adding custom runtimes](docs/usage/runtimes.md)
-- [Known issues and caveats](docs/issues.md)
-  - [Notes on session handling](docs/issues.md#notes-on-session-handling)
 
 ## Migrating to v6
 
