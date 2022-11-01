@@ -1,7 +1,6 @@
 import * as ShopifyErrors from '../error';
 import {validateConfig} from '../config';
 import {ApiVersion, ConfigParams} from '../base-types';
-import {MemorySessionStorage} from '../../session-storage/memory';
 
 const validParams: ConfigParams = {
   apiKey: 'apiKey',
@@ -12,7 +11,6 @@ const validParams: ConfigParams = {
   isEmbeddedApp: true,
   isPrivateApp: false,
   logFunction: () => Promise.resolve(),
-  sessionStorage: new MemorySessionStorage(),
 };
 
 const originalWarn = console.warn;
