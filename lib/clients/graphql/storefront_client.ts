@@ -1,8 +1,11 @@
-import {CreateGraphqlClientClassParams} from '..';
 import {ShopifyHeader} from '../../types';
 import {createHttpClientClass} from '../http_client/http_client';
 
-import {AccessTokenHeader, GraphqlClient} from './graphql_client';
+import {
+  AccessTokenHeader,
+  GraphqlClient,
+  CreateGraphqlClientClassParams,
+} from './graphql_client';
 
 export class StorefrontClient extends GraphqlClient {
   baseApiPath = '/api';
