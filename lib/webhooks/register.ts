@@ -89,7 +89,7 @@ async function getExistingHandlers(
   session: Session,
 ): Promise<WebhookRegistry> {
   const GraphqlClient = createGraphqlClientClass({config});
-  const client = new GraphqlClient(session);
+  const client = new GraphqlClient({session});
 
   const existingHandlers: WebhookRegistry = {};
 
@@ -186,7 +186,7 @@ async function registerTopic({
   );
 
   const GraphqlClient = createGraphqlClientClass({config});
-  const client = new GraphqlClient(session);
+  const client = new GraphqlClient({session});
 
   let operation = WebhookOperation.Create;
   registerResults = registerResults.concat(
