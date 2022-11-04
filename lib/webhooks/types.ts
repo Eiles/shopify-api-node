@@ -1,4 +1,5 @@
 import {AdapterArgs} from '../../runtime';
+import {Session} from '../session/session';
 
 import type {shopifyWebhooks} from '.';
 
@@ -55,8 +56,7 @@ export enum WebhookOperation {
 }
 
 export interface RegisterParams {
-  shop: string;
-  accessToken: string;
+  session: Session;
 }
 
 export interface RegisterResult {

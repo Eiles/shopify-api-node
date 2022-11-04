@@ -1,6 +1,7 @@
 import {createGraphqlClientClass} from '../clients/graphql/graphql_client';
 import {InvalidDeliveryMethodError, ShopifyError} from '../error';
 import {ConfigInterface, gdprTopics} from '../base-types';
+import {Session} from '../session/session';
 
 import {
   addHostToCallbackUrl,
@@ -22,8 +23,7 @@ import {
 
 interface RegisterTopicParams {
   config: ConfigInterface;
-  shop: string;
-  accessToken: string;
+  session: Session;
   topic: string;
   existingHandlers: WebhookHandler[];
   handlers: WebhookHandler[];
@@ -50,8 +50,7 @@ export function createRegister(
   webhookRegistry: WebhookRegistry,
 ) {
   return async function register({
-    accessToken,
-    shop,
+    session,
   }: RegisterParams): Promise<RegisterReturn> {
     const registerReturn: RegisterReturn = Object.keys(webhookRegistry).reduce(
       (acc: RegisterReturn, topic) => {
@@ -61,11 +60,7 @@ export function createRegister(
       {},
     );
 
-    const existingHandlers = await getExistingHandlers(
-      config,
-      shop,
-      accessToken,
-    );
+    const existingHandlers = await getExistingHandlers(config, session);
 
     for (const topic in webhookRegistry) {
       if (!Object.prototype.hasOwnProperty.call(webhookRegistry, topic)) {
@@ -79,10 +74,33 @@ export function createRegister(
       registerReturn[topic] = await registerTopic({
         config,
         topic,
-        shop,
-        accessToken,
+        session,
         existingHandlers: existingHandlers[topic] || [],
         handlers: createGetHandlers(webhookRegistry)(topic),
+      });
+
+      // Remove this topic from the list of existing handlers so we have a list of leftovers
+      delete existingHandlers[topic];
+    }
+
+    // Delete any leftover handlers
+    for (const topic in existingHandlers) {
+      if (!Object.prototype.hasOwnProperty.call(existingHandlers, topic)) {
+        continue;
+      }
+
+      const GraphqlClient = createGraphqlClientClass({config});
+      const client = new GraphqlClient({
+        domain: session.shop,
+        accessToken: session.accessToken,
+      });
+
+      registerReturn[topic] = await runMutations({
+        config,
+        client,
+        topic,
+        handlers: existingHandlers[topic],
+        operation: WebhookOperation.Delete,
       });
     }
 
@@ -92,11 +110,13 @@ export function createRegister(
 
 async function getExistingHandlers(
   config: ConfigInterface,
-  shop: string,
-  accessToken: string | undefined,
+  session: Session,
 ): Promise<WebhookRegistry> {
   const GraphqlClient = createGraphqlClientClass({config});
-  const client = new GraphqlClient({domain: shop, accessToken});
+  const client = new GraphqlClient({
+    domain: session.shop,
+    accessToken: session.accessToken,
+  });
 
   const existingHandlers: WebhookRegistry = {};
 
@@ -179,8 +199,7 @@ function buildHandlerFromNode(edge: WebhookCheckResponseNode): WebhookHandler {
 
 async function registerTopic({
   config,
-  shop,
-  accessToken,
+  session,
   topic,
   existingHandlers,
   handlers,
@@ -194,7 +213,10 @@ async function registerTopic({
   );
 
   const GraphqlClient = createGraphqlClientClass({config});
-  const client = new GraphqlClient({domain: shop, accessToken});
+  const client = new GraphqlClient({
+    domain: session.shop,
+    accessToken: session.accessToken,
+  });
 
   let operation = WebhookOperation.Create;
   registerResults = registerResults.concat(

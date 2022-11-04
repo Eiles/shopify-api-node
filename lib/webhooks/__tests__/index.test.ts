@@ -8,6 +8,7 @@ import {
 } from '../../__tests__/test-helper';
 import {HttpWebhookHandler} from '../types';
 import {Shopify} from '../../base-types';
+import {Session} from '../../session/session';
 import {InvalidDeliveryMethodError, InvalidWebhookError} from '../../error';
 import {shopifyApi} from '../..';
 
@@ -15,10 +16,13 @@ import * as mockResponses from './responses';
 import {EVENT_BRIDGE_HANDLER, HTTP_HANDLER, PUB_SUB_HANDLER} from './handlers';
 import {getTestExpressApp, headers, hmac} from './utils';
 
-const REGISTER_PARAMS = {
-  accessToken: 'some token',
+const session = new Session({
+  id: 'test-session',
   shop: 'shop1.myshopify.io',
-};
+  accessToken: 'some token',
+  isOnline: true,
+  state: 'test-state',
+});
 
 describe('webhooks', () => {
   it('HTTP handlers that point to the same location are merged', async () => {
@@ -31,7 +35,7 @@ describe('webhooks', () => {
 
     queueMockResponse(JSON.stringify(mockResponses.webhookCheckEmptyResponse));
     queueMockResponse(JSON.stringify(mockResponses.successResponse));
-    await shopify.webhooks.register(REGISTER_PARAMS);
+    await shopify.webhooks.register({session});
 
     expect(shopify.webhooks.getTopicsAdded()).toContain('PRODUCTS_CREATE');
 
@@ -40,7 +44,7 @@ describe('webhooks', () => {
 
     queueMockResponse(JSON.stringify(mockResponses.webhookCheckResponse));
     queueMockResponse(JSON.stringify(mockResponses.successResponse));
-    await shopify.webhooks.register(REGISTER_PARAMS);
+    await shopify.webhooks.register({session});
 
     expect(shopify.webhooks.getTopicsAdded()).toContain('PRODUCTS_UPDATE');
     expect(shopify.webhooks.getTopicsAdded()).toHaveLength(2);
@@ -56,7 +60,7 @@ describe('webhooks', () => {
     queueMockResponse(
       JSON.stringify(mockResponses.webhookCheckMultiHandlerResponse),
     );
-    await shopify.webhooks.register(REGISTER_PARAMS);
+    await shopify.webhooks.register({session});
 
     expect(shopify.webhooks.getTopicsAdded()).toHaveLength(2);
     expect(shopify.webhooks.getHandlers(topic)).toEqual([handler1, handler3]);
@@ -80,16 +84,8 @@ describe('webhooks', () => {
       .expect(200);
 
     // Both handlers should have been called
-    expect(handler1.callback).toHaveBeenCalledWith(
-      topic,
-      REGISTER_PARAMS.shop,
-      body,
-    );
-    expect(handler3.callback).toHaveBeenCalledWith(
-      topic,
-      REGISTER_PARAMS.shop,
-      body,
-    );
+    expect(handler1.callback).toHaveBeenCalledWith(topic, session.shop, body);
+    expect(handler3.callback).toHaveBeenCalledWith(topic, session.shop, body);
   });
 
   it('fires a single creation request for multiple HTTP handlers', async () => {
@@ -108,7 +104,7 @@ describe('webhooks', () => {
 
     queueMockResponse(JSON.stringify(mockResponses.webhookCheckEmptyResponse));
     queueMockResponse(JSON.stringify(mockResponses.successResponse));
-    await shopify.webhooks.register(REGISTER_PARAMS);
+    await shopify.webhooks.register({session});
   });
 
   it('allows multiple HTTP handlers on different addresses for the same topic, only one gets triggered by process', async () => {
@@ -129,7 +125,7 @@ describe('webhooks', () => {
     queueMockResponse(JSON.stringify(mockResponses.webhookCheckEmptyResponse));
     queueMockResponse(JSON.stringify(mockResponses.successResponse));
     queueMockResponse(JSON.stringify(mockResponses.successResponse));
-    await shopify.webhooks.register(REGISTER_PARAMS);
+    await shopify.webhooks.register({session});
 
     const app = getTestExpressApp();
     app.post('/webhooks1', async (req, res) => {

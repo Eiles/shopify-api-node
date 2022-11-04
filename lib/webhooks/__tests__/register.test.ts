@@ -7,6 +7,7 @@ import {queueMockResponse, shopify} from '../../__tests__/test-helper';
 import {mockTestRequests} from '../../../adapters/mock/mock_test_requests';
 import {queryTemplate} from '../query-template';
 import {TEMPLATE_GET_HANDLERS, TEMPLATE_MUTATION} from '../register';
+import {Session} from '../../session/session';
 import {InvalidDeliveryMethodError} from '../../error';
 
 import * as mockResponses from './responses';
@@ -31,10 +32,13 @@ interface MutationParams {
   [key: string]: any;
 }
 
-const REGISTER_PARAMS = {
-  accessToken: 'some token',
+const session = new Session({
+  id: 'test-session',
   shop: 'shop1.myshopify.io',
-};
+  accessToken: 'some token',
+  isOnline: true,
+  state: 'test-state',
+});
 
 describe('shopify.webhooks.register', () => {
   it('sends a post request to the given shop domain with the webhook data as a GraphQL query in the body and the access token in the headers', async () => {
@@ -276,7 +280,7 @@ describe('shopify.webhooks.register', () => {
 
     queueMockResponse(JSON.stringify(mockResponses.webhookCheckEmptyResponse));
 
-    await expect(shopify.webhooks.register(REGISTER_PARAMS)).rejects.toThrow(
+    await expect(shopify.webhooks.register({session})).rejects.toThrow(
       InvalidDeliveryMethodError,
     );
   });
@@ -291,12 +295,33 @@ describe('shopify.webhooks.register', () => {
         JSON.stringify(mockResponses.webhookCheckEmptyResponse),
       );
 
-      const response = await shopify.webhooks.register(REGISTER_PARAMS);
+      const response = await shopify.webhooks.register({session});
 
       expect(mockTestRequests.requestList).toHaveLength(1);
       expect(response[gdprTopic]).toHaveLength(0);
       expect(shopify.webhooks.getTopicsAdded()).toContain(gdprTopic);
     });
+  });
+
+  it('deletes handlers not currently in the registry', async () => {
+    const topic = 'NEW_TOPIC_TO_ADD';
+    const handler = {...HTTP_HANDLER};
+    const responses = [
+      mockResponses.successResponse,
+      mockResponses.successDeleteResponse,
+    ];
+
+    const registerReturn = await registerWebhook({
+      topic,
+      handler,
+      checkMockResponse: mockResponses.webhookCheckResponse,
+      responses,
+    });
+
+    expect(Object.keys(registerReturn)).toEqual([
+      'NEW_TOPIC_TO_ADD',
+      'PRODUCTS_CREATE',
+    ]);
   });
 });
 
@@ -313,11 +338,11 @@ async function registerWebhook({
     queueMockResponse(JSON.stringify(response));
   });
 
-  const result = await shopify.webhooks.register(REGISTER_PARAMS);
+  const result = await shopify.webhooks.register({session});
 
   expect(mockTestRequests.requestList).toHaveLength(responses.length + 1);
 
-  assertWebhookCheckRequest(REGISTER_PARAMS);
+  assertWebhookCheckRequest({session});
 
   return result;
 }
@@ -340,14 +365,14 @@ function createWebhookCheckQuery() {
   return queryTemplate(TEMPLATE_GET_HANDLERS, {END_CURSOR: 'null'});
 }
 
-function assertWebhookCheckRequest(REGISTER_PARAMS: RegisterParams) {
+function assertWebhookCheckRequest({session}: RegisterParams) {
   expect({
     method: Method.Post.toString(),
-    domain: REGISTER_PARAMS.shop,
+    domain: session.shop,
     path: `/admin/api/${shopify.config.apiVersion}/graphql.json`,
     headers: {
       [Header.ContentType]: DataType.GraphQL.toString(),
-      [ShopifyHeader.AccessToken]: REGISTER_PARAMS.accessToken,
+      [ShopifyHeader.AccessToken]: session.accessToken,
     },
     data: createWebhookCheckQuery(),
   }).toMatchMadeHttpRequest();
@@ -372,11 +397,11 @@ function assertWebhookRegistrationRequest(
 
   expect({
     method: Method.Post.toString(),
-    domain: REGISTER_PARAMS.shop,
+    domain: session.shop,
     path: `/admin/api/${shopify.config.apiVersion}/graphql.json`,
     headers: {
       [Header.ContentType]: DataType.GraphQL.toString(),
-      [ShopifyHeader.AccessToken]: REGISTER_PARAMS.accessToken,
+      [ShopifyHeader.AccessToken]: session.accessToken,
     },
     data: webhookQuery,
   }).toMatchMadeHttpRequest();
