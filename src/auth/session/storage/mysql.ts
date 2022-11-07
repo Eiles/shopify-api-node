@@ -146,7 +146,12 @@ export class MySQLSessionStorage implements SessionStorage {
     }
   }
 
-  private query(sql: string, params: any[] = []): Promise<any> {
+  private async query(sql: string, params: any[] = []): Promise<any> {
+    try {
+      this.connection.ping();
+    } catch (e) {
+      this.connection = await mysql.createConnection(this.dbUrl.toString());
+    }
     return this.connection.query(sql, params);
   }
 }
